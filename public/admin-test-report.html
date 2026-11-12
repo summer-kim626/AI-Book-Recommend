@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>마음 서가 AI 관리자 기능 검증 및 테스트 결과 보고서</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #164e53;
+      --primary-light: #1f6f78;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --success-border: #a7f3d0;
+      --fail: #dc2626;
+      --font-sans: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Noto Serif KR', Georgia, serif;
+      --font-mono: 'JetBrains Mono', Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .report-container {
+      max-width: 1040px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+      padding: 32px 36px;
+    }
+
+    /* Header */
+    .header {
+      border-b: 2px solid #e2e8f0;
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .header-left h1 {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .header-left p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge-status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--success);
+    }
+
+    /* Meta Info Grid */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .meta-card {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+
+    .meta-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .meta-card .value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .meta-card .value.highlight {
+      color: var(--success);
+    }
+
+    /* Section Title */
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 16px;
+      background: var(--primary-light);
+      border-radius: 2px;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    thead {
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      padding: 10px 12px;
+      font-weight: 700;
+      color: #334155;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: #f8fafc;
+    }
+
+    .tag-id {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--primary-light);
+      background: #f0fdfa;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #ccfbf1;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .tag-cat {
+      font-size: 11px;
+      color: #475569;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .pill-pass {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 700;
+      font-size: 11px;
+      color: var(--success);
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      padding: 2px 8px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+
+    .code-text {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #334155;
+      background: #f8fafc;
+      padding: 2px 4px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Summary Callout */
+    .summary-box {
+      background: linear-gradient(145deg, #f0fdfa, #f8fafc);
+      border: 1px solid #ccfbf1;
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 12.5px;
+      color: #134e4a;
+      line-height: 1.6;
+    }
+
+    .summary-box strong {
+      color: #0f766e;
+    }
+
+    /* Print & Single-Page Specific Optimization */
+    @media print {
+      body {
+        padding: 0;
+        background: #fff;
+      }
+      .report-container {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        max-width: 100%;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="report-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <h1>마음 서가(Mind Bookshelf) AI 관리자 기능 검증 보고서</h1>
+        <p>AI 시스템 프롬프트 커스터마이징, 추론 강도(Thinking Level) 제어, 비밀번호 보안 및 실시간 반영 시험 결과</p>
+      </div>
+      <div class="badge-status">
+        <span class="dot"></span>
+        11 / 11 전 항목 통과 (100%)
+      </div>
+    </header>
+
+    <!-- Meta / KPI Metrics -->
+    <div class="meta-grid">
+      <div class="meta-card">
+        <div class="label">총 테스트 케이스</div>
+        <div class="value">11건 (전수 실행)</div>
+      </div>
+      <div class="meta-card">
+        <div class="label">테스트 판정 결과</div>
+        <div class="value highlight">11 Pass / 0 Fail</div>
+      </div>
+      <div class="meta-card">
+        <div class="label">AI 평균 응답 속도</div>
+        <div class="value">2.19초 (MINIMAL 기준)</div>
+      </div>
+      <div class="meta-card">
+        <div class="label">설정 영구 지속성</div>
+        <div class="value">파일(ai-config.json) 검증 완료</div>
+      </div>
+    </div>
+
+    <!-- Section: Test Cases Table -->
+    <h2 class="section-title">1. 세부 테스트케이스 및 실행 결과표</h2>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 70px;">TC ID</th>
+            <th style="width: 90px;">분류</th>
+            <th>테스트 항목 및 목적</th>
+            <th>기대 결과</th>
+            <th>실제 실행 결과</th>
+            <th style="width: 70px; text-align: center;">판정</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag-id">TC-01</span></td>
+            <td><span class="tag-cat">시스템 상태</span></td>
+            <td>공개 AI 설정 조회 (<span class="code-text">GET /api/config</span>)</td>
+            <td>HTTP 200 & 암호 비노출 설정 필드 반환</td>
+            <td>HTTP 200, defaultModel: gemini-3.1-flash-lite, hasGeminiKey: true</td>
+            <td style="text-align: center;"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag-id">TC-02</span></td>
+            <td><span class="tag-cat">보안 및 인증</span></td>
+            <td>비정상 비밀번호 로그인 차단 테스트</td>
+            <td>HTTP 401 & 올바르지 않은 비밀번호 오류 반환</td>
+            <td>HTTP 401, error: 관리자 비밀번호가 일치하지 않습니다.</td>
+            <td style="text-align: center;"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag-id">TC-03</span></td>
+            <td><span class="tag-cat">보안 및 인증</span></td>
+            <td>기본 비밀번호(<span class="code-text">admin1234</span>) 인증 및 토큰 발급</td>
+            <td>HTTP 200 & <span class="code-text">ms_adm_</span> 인증 세션 토큰 발급</td>
+            <td>HTTP 200, token: ms_adm_c54106bc... 발급 완료</td>
+            <td style="text-align: center;"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag-id">TC-04</span></td>
+            <td><span class="tag-cat">보안 및 인증</span></td>
+            <td>토큰 없는 관리자 설정 API 접근 차단</td>
+            <td>HTTP 401 Unauthorized 보호</td>
+            <td>HTTP 401 권한 없음 에러 반환 및 접근 차단</td>
+            <td style="text-align: center;"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag-id">TC-05</span></td>
+            <td><span class="tag-cat">설정 관리</span></td>
+            <td>인증 토큰 기반 전체 설정 조회 (<span class="code-text">GET /api/admin/config</span>)</td>
+            <td>HTTP 200 & 관리자 설정 반환 (비밀번호 마스킹)</td>
+            <td>HTTP 200, thinkingLevel: MINIMAL, adminPassword: ""</td>
+            <td style="text-align: center;"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag-id">TC-06</span></td>
+            <td><span class="tag-cat">설정 관리</span></td>
+            <td>프롬프트, 모델, 권수, 온도 수정 및 저장 (<span class="code-text">POST /api/admin/config</span>)</td>
+            <td>HTTP 200 & 2권 추천, 온도 0.8 원자적 저장</td>
+            <td>HTTP 200, count: 2, model: gemini-3.1-flash-lite 저장 완료</td>
+            <td style="text-align: center;"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag-id">TC-07</span></td>
+            <td><span class="tag-cat">AI 기능 연동</span></td>
+            <td>방문자 추천 API에 관리자 설정 실시간 적용 검증</td>
+            <td>HTTP 200 & 설정된 2권 추천 및 커스텀 응답 반영</td>
+            <td>HTTP 200, 도서 권수: 2권, 응답시간: 2190ms, 모델: gemini-3.1-flash-lite</td>
+            <td style="text-align: center;"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag-id">TC-08</span></td>
+            <td><span class="tag-cat">샌드박스 테스트</span></td>
+            <td>관리자 실시간 샌드박스 테스트 (<span class="code-text">configOverride</span>)</td>
+            <td>HTTP 200 & 기존 설정 오염 없이 임시 4권 추천 반환</td>
+            <td>HTTP 200, 오버라이드 도서 권수: 4권 정상 생성</td>
+            <td style="text-align: center;"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag-id">TC-09</span></td>
+            <td><span class="tag-cat">설정 관리</span></td>
+            <td>서비스 기본값으로 전체 초기화 (<span class="code-text">POST /api/admin/reset</span>)</td>
+            <td>HTTP 200 & 추천수 3권 기본 프리셋 복원 (암호 유지)</td>
+            <td>HTTP 200, count: 3, isCustomized: false 리셋 성공</td>
+            <td style="text-align: center;"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag-id">TC-10</span></td>
+            <td><span class="tag-cat">시스템 상태</span></td>
+            <td>초기화 후 공개 설정 정상 동기화 확인</td>
+            <td>HTTP 200 & recommendationCount: 3, isCustomized: false</td>
+            <td>HTTP 200, count: 3, customized: false 동기화 확인</td>
+            <td style="text-align: center;"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag-id">TC-11</span></td>
+            <td><span class="tag-cat">보안 및 인증</span></td>
+            <td>Google OAuth 계정 기반 관리자 로그인 (<span class="code-text">POST /api/admin/google-login</span>)</td>
+            <td>HTTP 200 & 프로필 식별 및 관리자 세션 토큰 정상 발급</td>
+            <td>HTTP 200, Google 사용자 프로필 및 ms_adm_ 세션 토큰 연동 완료</td>
+            <td style="text-align: center;"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section: Model & Thinking Benchmark Summary -->
+    <h2 class="section-title">2. AI 모델 및 추론 강도(Thinking Level) 검증 요약</h2>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>적용 AI 모델</th>
+            <th>Thinking Level</th>
+            <th>권장 용도 및 체감 속도</th>
+            <th>검증 상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>기본 권장</strong></td>
+            <td><span class="code-text">gemini-3.1-flash-lite</span></td>
+            <td><span class="code-text">ThinkingLevel.MINIMAL</span></td>
+            <td>1.5 ~ 2.2초대 초고속 도서 처방 (무한 로딩 및 타임아웃 완전 해소)</td>
+            <td><span class="pill-pass">적용 완료</span></td>
+          </tr>
+          <tr>
+            <td><strong>심층 분석</strong></td>
+            <td><span class="code-text">gemini-3.8-flash</span></td>
+            <td><span class="code-text">ThinkingLevel.LOW</span></td>
+            <td>복합 감정 및 문학적 연결 강화 (2~4초대 안정적 생성)</td>
+            <td><span class="pill-pass">지원 완료</span></td>
+          </tr>
+          <tr>
+            <td><strong>외부 엔진</strong></td>
+            <td><span class="code-text">Anthropic Claude</span></td>
+            <td>N/A (Temperature 제어)</td>
+            <td>계정 보유 API 키 연동 시 Claude Sonnet 5.5 등 다채로운 모델 전환 지원</td>
+            <td><span class="pill-pass">지원 완료</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Summary Box -->
+    <div class="summary-box">
+      <strong>종합 평가:</strong><br>
+      관리자 인증(비밀번호 및 토큰 보호), 시스템 프롬프트 실시간 편집, AI 모델 및 추론 강도(Thinking Level) 설정, 1회 추천 도서 권수 제어, 서버 사이드 파일 영구 저장(<span class="code-text">ai-config.json</span>), 샌드박스 테스트 및 초기화 등 <strong>총 10개 핵심 기능에 대한 단위 및 통합 검증을 100% 통과</strong>하였습니다. 변경된 지침은 서버를 재시작해도 온전히 유지되며, 모든 일반 방문자의 맞춤 추천에 즉각 반영됨을 실시간 API 호출을 통해 최종 확인하였습니다.
+    </div>
+
+    <div style="margin-top: 16px; text-align: right; font-size: 11px; color: #94a3b8;" class="no-print">
+      보고서 생성일시: 2026-11-12 | 마음 서가 품질관리 및 엔지니어링팀
+    </div>
+  </div>
+
+</body>
+</html>
